@@ -9,10 +9,10 @@ from fastapi import (
 from fastapi.middleware.cors import CORSMiddleware
 from sqlalchemy.orm import Session
 
-from bot_detector import detect_bot
-from database import get_db
-from rate_limiter import check_rate_limit
-from schemas import (
+from backend.bot_detector import detect_bot
+from backend.database import get_db
+from backend.rate_limiter import check_rate_limit
+from backend.schemas import (
     ApplicationSubmission,
     ApplicationSubmissionResponse,
     CandidateAnalysisResponse,
@@ -21,16 +21,16 @@ from schemas import (
     CandidateRiskRequest,
     CandidateRiskResponse,
 )
-from services.candidate_analysis import (
+from backend.services.candidate_analysis import (
     analyze_candidate_document,
 )
-from services.candidate_repository import (
+from backend.services.candidate_repository import (
     build_candidate_detail,
     create_candidate,
     get_all_candidates,
     get_candidate_by_id,
 )
-from services.candidate_risk import (
+from backend.services.candidate_risk import (
     build_candidate_risk,
 )
 

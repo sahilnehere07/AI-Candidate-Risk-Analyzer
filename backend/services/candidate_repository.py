@@ -3,7 +3,7 @@ import json
 from sqlalchemy import select
 from sqlalchemy.orm import Session
 
-from models import Candidate
+from backend.models import Candidate
 
 
 def create_candidate(

@@ -1,6 +1,7 @@
 import os
 from pathlib import Path
 
+from dotenv import load_dotenv
 from sqlalchemy import create_engine
 from sqlalchemy.orm import declarative_base, sessionmaker
 
@@ -9,22 +10,33 @@ from sqlalchemy.orm import declarative_base, sessionmaker
 PROJECT_ROOT = Path(__file__).resolve().parent.parent
 
 
-# Local SQLite database
+# Load environment variables from .env
+load_dotenv(PROJECT_ROOT / ".env")
+
+
+# Local SQLite database path
 DATABASE_PATH = PROJECT_ROOT / "data" / "candidate_risk.db"
 
 
-# Use PostgreSQL when DATABASE_URL is provided.
+# Use PostgreSQL when DATABASE_URL is available.
 # Otherwise, use local SQLite.
 DATABASE_URL = os.getenv("DATABASE_URL")
 
 if not DATABASE_URL:
     DATABASE_URL = f"sqlite:///{DATABASE_PATH.as_posix()}"
 
-# Some cloud providers may provide the older postgres:// format.
+
+# Make PostgreSQL use the psycopg (version 3) driver.
 if DATABASE_URL.startswith("postgres://"):
     DATABASE_URL = DATABASE_URL.replace(
         "postgres://",
+        "postgresql+psycopg://",
+        1,
+    )
+elif DATABASE_URL.startswith("postgresql://"):
+    DATABASE_URL = DATABASE_URL.replace(
         "postgresql://",
+        "postgresql+psycopg://",
         1,
     )
 

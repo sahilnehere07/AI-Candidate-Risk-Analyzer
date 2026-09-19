@@ -1,17 +1,17 @@
 import os
 import tempfile
 
-from services.document_parser import (
+from backend.services.document_parser import (
     extract_text_from_pdf,
     extract_text_from_docx,
     extract_text_from_txt,
 )
 
-from services.text_preprocessor import clean_text
-from services.text_analyzer import analyze_sentences
-from services.risk_scorer import calculate_ai_risk
+from backend.services.text_preprocessor import clean_text
+from backend.services.text_analyzer import analyze_sentences
+from backend.services.risk_scorer import calculate_ai_risk
 
-from services.metadata_analyzer import (
+from backend.services.metadata_analyzer import (
     extract_pdf_metadata,
     analyze_metadata,
 )
