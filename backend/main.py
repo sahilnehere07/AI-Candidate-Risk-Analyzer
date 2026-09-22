@@ -40,6 +40,10 @@ import os
 app = FastAPI()
 
 
+# ============================================================
+# CORS
+# ============================================================
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=[
@@ -53,9 +57,21 @@ app.add_middleware(
 )
 
 
-MAX_FILE_SIZE = 5 * 1024 * 1024
-ALLOWED_EXTENSIONS = {".pdf", ".docx"}
+# ============================================================
+# FILE SETTINGS
+# ============================================================
 
+MAX_FILE_SIZE = 5 * 1024 * 1024
+
+ALLOWED_EXTENSIONS = {
+    ".pdf",
+    ".docx",
+}
+
+
+# ============================================================
+# ROOT
+# ============================================================
 
 @app.get("/")
 def root():
@@ -67,10 +83,20 @@ def root():
     }
 
 
+# ============================================================
+# HEALTH CHECK
+# ============================================================
+
 @app.get("/health")
 def health_check():
-    return {"status": "healthy"}
+    return {
+        "status": "healthy"
+    }
 
+
+# ============================================================
+# RESUME UPLOAD + AI ANALYSIS
+# ============================================================
 
 @app.post(
     "/upload",
@@ -83,6 +109,10 @@ async def upload_document(
         file.filename
     )[1].lower()
 
+    # --------------------------------------------------------
+    # File type validation
+    # --------------------------------------------------------
+
     if suffix not in ALLOWED_EXTENSIONS:
         raise HTTPException(
             status_code=400,
@@ -92,7 +122,15 @@ async def upload_document(
             ),
         )
 
+    # --------------------------------------------------------
+    # Read uploaded file
+    # --------------------------------------------------------
+
     file_content = await file.read()
+
+    # --------------------------------------------------------
+    # File size validation
+    # --------------------------------------------------------
 
     if len(file_content) > MAX_FILE_SIZE:
         raise HTTPException(
@@ -102,11 +140,19 @@ async def upload_document(
             ),
         )
 
+    # --------------------------------------------------------
+    # Empty file validation
+    # --------------------------------------------------------
+
     if not file_content:
         raise HTTPException(
             status_code=400,
             detail="Uploaded file is empty",
         )
+
+    # --------------------------------------------------------
+    # Analyze document
+    # --------------------------------------------------------
 
     try:
         result = analyze_candidate_document(
@@ -116,21 +162,45 @@ async def upload_document(
 
         return result
 
+    # --------------------------------------------------------
+    # Expected document errors
+    # --------------------------------------------------------
+
     except ValueError as error:
         raise HTTPException(
             status_code=400,
             detail=str(error),
         )
 
-    except Exception:
+    # --------------------------------------------------------
+    # Temporary production debugging
+    # --------------------------------------------------------
+    #
+    # This exposes the actual exception so we can identify
+    # why Render is returning 400 for the uploaded PDF.
+    #
+    # We will remove this detailed error after fixing the
+    # production issue.
+    # --------------------------------------------------------
+
+    except Exception as error:
+        print(
+            "UPLOAD ERROR:",
+            type(error).__name__,
+            str(error),
+        )
+
         raise HTTPException(
-            status_code=400,
+            status_code=500,
             detail=(
-                "Unable to process the "
-                "uploaded document"
+                f"{type(error).__name__}: {error}"
             ),
         )
 
+
+# ============================================================
+# BOT DETECTION + RATE LIMITING
+# ============================================================
 
 @app.post(
     "/submit-application",
@@ -176,6 +246,10 @@ def submit_application(
         "rate_limit": rate_result,
     }
 
+
+# ============================================================
+# FINAL CANDIDATE RISK
+# ============================================================
 
 @app.post(
     "/candidate-risk",
@@ -223,6 +297,10 @@ def candidate_risk(
     }
 
 
+# ============================================================
+# CANDIDATE HISTORY
+# ============================================================
+
 @app.get(
     "/candidates",
     response_model=list[CandidateListItem],
@@ -234,6 +312,10 @@ def get_candidates(
 
     return candidates
 
+
+# ============================================================
+# SINGLE CANDIDATE
+# ============================================================
 
 @app.get(
     "/candidates/{candidate_id}",
