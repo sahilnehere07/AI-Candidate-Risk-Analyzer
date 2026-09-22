@@ -6,5 +6,8 @@ python-docx
 SQLAlchemy
 alembic
 psycopg[binary]
-pytest
 python-dotenv
+pytest
+nltk
+scikit-learn
+joblib
